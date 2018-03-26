@@ -1,66 +1,75 @@
-import pickBy from 'lodash/pickBy';
-import forEach from 'lodash/forEach';
-import { saveState, getSavedState, clearSavedState } from './local-storage';
+'use strict';
 
-export default {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _lodash = require('lodash');
+
+var _localStorage = require('./local-storage');
+
+exports.default = {
     watch: {
         '$data': {
-            handler() {
+            handler: function handler() {
                 this.saveState();
             },
-            deep: true,
-        },
+
+            deep: true
+        }
     },
 
-    created() {
+    created: function created() {
         this.loadState();
     },
 
-    methods: {
-        loadState() {
 
-            const savedState = getSavedState(this.getSaveStateConfig().cacheKey);
+    methods: {
+        loadState: function loadState() {
+            var _this = this;
+			if (!this.getSaveStateConfig) return;
+
+            var savedState = (0, _localStorage.getSavedState)(this.getSaveStateConfig().cacheKey);
 
             if (!savedState) {
                 return;
             }
 
-            forEach(savedState, (value, key) => {
+            (0, _lodash.forEach)(savedState, function (value, key) {
 
-                if (this.attributeIsManagedBySaveState(key)) {
-                    if (this.getSaveStateConfig().onLoad) {
-                        value = this.getSaveStateConfig().onLoad(key, value);
+                if (_this.attributeIsManagedBySaveState(key)) {
+                    if (_this.getSaveStateConfig().onLoad) {
+                        value = _this.getSaveStateConfig().onLoad(key, value);
                     }
 
-                    this.$data[key] = value;
+                    _this.$data[key] = value;
                 }
             });
         },
+        saveState: function saveState() {
+            var _this2 = this;
+			if (!this.getSaveStateConfig) return;
 
-        saveState() {
-            const data = pickBy(this.$data, (value, attribute) => {
-                return this.attributeIsManagedBySaveState(attribute);
+            var data = (0, _lodash.pickBy)(this.$data, function (value, attribute) {
+                return _this2.attributeIsManagedBySaveState(attribute);
             });
 
-            saveState(this.getSaveStateConfig().cacheKey, data);
+            (0, _localStorage.saveState)(this.getSaveStateConfig().cacheKey, data);
         },
-
-        attributeIsManagedBySaveState(attribute) {
-            if (this.getSaveStateConfig().ignoreProperties &&
-                this.getSaveStateConfig().ignoreProperties.indexOf(attribute) !== -1) {
+        attributeIsManagedBySaveState: function attributeIsManagedBySaveState(attribute) {
+            if (this.getSaveStateConfig().ignoreProperties && this.getSaveStateConfig().ignoreProperties.indexOf(attribute) !== -1) {
 
                 return false;
             }
 
-            if (! this.getSaveStateConfig().saveProperties) {
+            if (!this.getSaveStateConfig().saveProperties) {
                 return true;
             }
 
             return this.getSaveStateConfig().saveProperties.indexOf(attribute) !== -1;
         },
-
-        clearSavedState() {
-            clearSavedState(this.getSaveStateConfig().cacheKey);
-        },
-    },
+        clearSavedState: function clearSavedState() {
+            (0, _localStorage.clearSavedState)(this.getSaveStateConfig().cacheKey);
+        }
+    }
 };
